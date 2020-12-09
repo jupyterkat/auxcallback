@@ -1,0 +1,1 @@
+A callback utility for [auxtools](https://github.com/willox/auxtools). Provides a way to defer functions arbitrarily to be run at a later time with a DreamMaker context, guaranteeing that they're called only where it won't cause a fault.
