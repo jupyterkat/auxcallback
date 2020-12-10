@@ -3,7 +3,7 @@ extern crate lazy_static;
 
 use auxtools::*;
 
-use std::time::{Duration, Instant};
+use coarsetime::{Duration, Instant};
 
 type DeferredFunc = Box<dyn Fn(&DMContext) -> DMResult + Send + Sync>;
 
@@ -74,7 +74,6 @@ pub fn process_all_callbacks(ctx: &DMContext) {
 pub fn process_all_callbacks_for(ctx: &DMContext, duration: Duration) -> bool {
     let now = Instant::now();
     let world = ctx.get_world();
-    let mut saturation_timer = 0;
     'outer: for entry in CALLBACK_CHANNELS.iter() {
         let receiver = entry.value().1.clone();
         for callback in receiver.try_iter() {
@@ -83,16 +82,17 @@ pub fn process_all_callbacks_for(ctx: &DMContext, duration: Duration) -> bool {
                     .call("stack_trace", &[&Value::from_string(e.message.as_str())])
                     .unwrap();
             }
-            if saturation_timer > 4 && now.elapsed() > duration {
+            if now.elapsed() > duration {
                 break 'outer;
-            } else if saturation_timer <= 4 {
-                saturation_timer += 1;
-            } else {
-                saturation_timer = 0;
             }
         }
     }
     now.elapsed() > duration
+}
+
+/// Goes through every single outstanding callback and calls them, until a given time limit in milliseconds is reached.
+pub fn process_all_callbacks_for_millis(ctx: &DMContext, millis: u64) -> bool {
+    process_all_callbacks_for(ctx, Duration::from_millis(millis))
 }
 
 /// Goes through all outstanding callbacks from a given ID and calls them.
@@ -113,22 +113,22 @@ pub fn process_callbacks_for(ctx: &DMContext, id: String, duration: Duration) ->
     let receiver = callback_receiver_by_id_insert(id);
     let now = Instant::now();
     let world = ctx.get_world();
-    let mut saturation_timer = 0;
     for callback in receiver.try_iter() {
         if let Err(e) = callback(ctx) {
             world
                 .call("stack_trace", &[&Value::from_string(e.message.as_str())])
                 .unwrap();
         }
-        if saturation_timer > 4 && now.elapsed() > duration {
+        if now.elapsed() > duration {
             break;
-        } else if saturation_timer <= 4 {
-            saturation_timer += 1;
-        } else {
-            saturation_timer = 0;
         }
     }
     now.elapsed() > duration
+}
+
+/// Goes through outstanding callbacks from a given ID and calls them until a given time limit in milliseconds is reached.
+pub fn process_callbacks_for_millis(ctx: &DMContext, id: String, millis: u64) -> bool {
+    process_callbacks_for(ctx, id, Duration::from_millis(millis))
 }
 
 // This function is to be called from byond, preferably once a tick.
@@ -150,17 +150,14 @@ fn _process_callbacks() {
             Ok(Value::null())
         }
         2 => {
-            let arg_limit = args.get(1).unwrap().as_number()?;
+            let arg_limit = args.get(1).unwrap().as_number()? as u64;
             if let Ok(arg_str) = args.get(0).unwrap().as_string() {
-                Ok(Value::from(process_callbacks_for(
-                    ctx,
-                    arg_str,
-                    Duration::from_millis(arg_limit as u64),
+                Ok(Value::from(process_callbacks_for_millis(
+                    ctx, arg_str, arg_limit,
                 )))
             } else {
-                Ok(Value::from(process_all_callbacks_for(
-                    ctx,
-                    Duration::from_millis(arg_limit as u64),
+                Ok(Value::from(process_all_callbacks_for_millis(
+                    ctx, arg_limit,
                 )))
             }
         }

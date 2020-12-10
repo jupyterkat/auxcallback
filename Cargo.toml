@@ -14,3 +14,4 @@ auxtools = { git = "https://github.com/willox/auxtools" }
 lazy_static = "1.4.0"
 flume = "0.9.1"
 dashmap = "3.11.10"
+coarsetime = "0.1.18"
