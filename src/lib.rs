@@ -19,7 +19,7 @@ lazy_static! {
 pub fn callback_sender_by_id_insert(id: String) -> flume::Sender<DeferredFunc> {
     CALLBACK_CHANNELS
         .entry(id)
-        .or_insert(flume::unbounded())
+        .or_insert(flume::bounded(100000))
         .0
         .clone()
 }
@@ -29,7 +29,7 @@ pub fn callback_sender_by_id_insert(id: String) -> flume::Sender<DeferredFunc> {
 pub fn callback_receiver_by_id_insert(id: String) -> flume::Receiver<DeferredFunc> {
     CALLBACK_CHANNELS
         .entry(id)
-        .or_insert(flume::unbounded())
+        .or_insert(flume::bounded(100000))
         .1
         .clone()
 }
