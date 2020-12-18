@@ -66,6 +66,7 @@ pub fn process_all_callbacks(ctx: &DMContext) {
                     .call("stack_trace", &[&Value::from_string(e.message.as_str())])
                     .unwrap();
             }
+            drop(callback);
         }
     }
 }
@@ -82,6 +83,7 @@ pub fn process_all_callbacks_for(ctx: &DMContext, duration: Duration) -> bool {
                     .call("stack_trace", &[&Value::from_string(e.message.as_str())])
                     .unwrap();
             }
+            drop(callback);
             if now.elapsed() > duration {
                 break 'outer;
             }
@@ -105,6 +107,7 @@ pub fn process_callbacks(ctx: &DMContext, id: String) {
                 .call("stack_trace", &[&Value::from_string(e.message.as_str())])
                 .unwrap();
         }
+        drop(callback);
     }
 }
 
@@ -122,6 +125,7 @@ pub fn process_callbacks_for(ctx: &DMContext, id: String, duration: Duration) ->
         if now.elapsed() > duration {
             break;
         }
+        drop(callback);
     }
     now.elapsed() > duration
 }
