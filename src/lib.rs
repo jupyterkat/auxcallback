@@ -57,12 +57,12 @@ pub fn callback_receiver_by_id(id: String) -> Option<flume::Receiver<DeferredFun
 /// Goes through every single outstanding callback and calls them.
 /// All callback processing should be called from byond. To enforce this, a context is required.
 pub fn process_all_callbacks(ctx: &DMContext) {
-    let stacktrace = Proc::find("/proc/auxtools_stacktrace").unwrap();
+    let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
     for entry in CALLBACK_CHANNELS.iter() {
         let receiver = entry.value().1.clone();
         for callback in receiver {
             if let Err(e) = callback(ctx) {
-                let _ = stacktrace.call(&[&Value::from_string(e.message.as_str())]);
+                let _ = stack_trace.call(&[&Value::from_string(e.message.as_str())]);
             }
             drop(callback);
         }
@@ -72,12 +72,12 @@ pub fn process_all_callbacks(ctx: &DMContext) {
 /// Goes through every single outstanding callback and calls them, until a given time limit is reached.
 pub fn process_all_callbacks_for(ctx: &DMContext, duration: Duration) -> bool {
     let now = Instant::now();
-    let stacktrace = Proc::find("/proc/auxtools_stacktrace").unwrap();
+    let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
     'outer: for entry in CALLBACK_CHANNELS.iter() {
         let receiver = entry.value().1.clone();
         for callback in receiver.try_iter() {
             if let Err(e) = callback(ctx) {
-                let _ = stacktrace.call(&[&Value::from_string(e.message.as_str())]);
+                let _ = stack_trace.call(&[&Value::from_string(e.message.as_str())]);
             }
             drop(callback);
             if now.elapsed() > duration {
@@ -96,10 +96,10 @@ pub fn process_all_callbacks_for_millis(ctx: &DMContext, millis: u64) -> bool {
 /// Goes through all outstanding callbacks from a given ID and calls them.
 pub fn process_callbacks(ctx: &DMContext, id: String) {
     let receiver = callback_receiver_by_id_insert(id);
-    let stacktrace = Proc::find("/proc/auxtools_stacktrace").unwrap();
+    let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
     for callback in receiver.try_iter() {
         if let Err(e) = callback(ctx) {
-            let _ = stacktrace.call(&[&Value::from_string(e.message.as_str())]);
+            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str())]);
         }
         drop(callback);
     }
@@ -109,10 +109,10 @@ pub fn process_callbacks(ctx: &DMContext, id: String) {
 pub fn process_callbacks_for(ctx: &DMContext, id: String, duration: Duration) -> bool {
     let receiver = callback_receiver_by_id_insert(id);
     let now = Instant::now();
-    let stacktrace = Proc::find("/proc/auxtools_stacktrace").unwrap();
+    let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
     for callback in receiver.try_iter() {
         if let Err(e) = callback(ctx) {
-            let _ = stacktrace.call(&[&Value::from_string(e.message.as_str())]);
+            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str())]);
         }
         if now.elapsed() > duration {
             break;
