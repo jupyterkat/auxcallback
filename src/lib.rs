@@ -114,10 +114,10 @@ pub fn process_callbacks_for(ctx: &DMContext, id: String, duration: Duration) ->
         if let Err(e) = callback(ctx) {
             let _ = stack_trace.call(&[&Value::from_string(e.message.as_str())]);
         }
+        drop(callback);
         if now.elapsed() > duration {
             break;
         }
-        drop(callback);
     }
     now.elapsed() > duration
 }
