@@ -1,1 +1,3 @@
-A callback utility for [auxtools](https://github.com/willox/auxtools). Provides a way to defer functions arbitrarily to be run at a later time with a DreamMaker context, guaranteeing that they're called only where it won't cause a fault.
+A callback utility for [auxtools](https://github.com/willox/auxtools). Provides a way to defer functions arbitrarily to be run at a later time with a DreamMaker context. It is up to the user to call them correctly, I can't control it.
+
+There was a breaking change recently, replacing callback_sender_by_id_insert(id: String) with byond_callback_sender(), removing callback_receiver_by_id_insert (you can use your own channels for that) and in general doing away with the concept of more than one callback channel. This is primarily because that sort of system is unnecessary for a statically linked system like this, and just sorta extra annoyance on top.
