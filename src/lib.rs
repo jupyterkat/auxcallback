@@ -70,7 +70,7 @@ pub fn process_callbacks_for_millis(millis: u64) -> bool {
 /// }
 /// ```
 
-pub fn callback_processing_hook(args: &[&Value]) -> DMResult {
+pub fn callback_processing_hook(args: &mut Vec<Value>) -> DMResult {
     match args.len() {
         0 => {
             process_callbacks();
