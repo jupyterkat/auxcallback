@@ -31,7 +31,7 @@ pub fn process_callbacks() {
     let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
     for callback in CALLBACK_CHANNEL.1.try_iter() {
         if let Err(e) = callback() {
-            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str())]);
+            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str()).unwrap()]);
         }
         drop(callback);
     }
@@ -43,7 +43,7 @@ pub fn process_callbacks_for(duration: Duration) -> bool {
     let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
     for callback in CALLBACK_CHANNEL.1.try_iter() {
         if let Err(e) = callback() {
-            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str())]);
+            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str()).unwrap()]);
         }
         drop(callback);
         if now.elapsed() > duration {
