@@ -66,7 +66,7 @@ pub fn process_callbacks_for_millis(millis: u64) -> bool {
 /// e.g. hooks::hook("/proc/process_library_callbacks",callback_processing_hook)
 /// and then you have to call that function manually.
 #[hook]
-fn callback_processing_hook() {
+pub fn callback_processing_hook() {
     match args.len() {
         0 => {
             process_callbacks();
