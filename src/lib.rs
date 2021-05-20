@@ -62,11 +62,15 @@ pub fn process_callbacks_for_millis(millis: u64) -> bool {
 /// Calling with no arguments will process every outstanding callback.
 /// Calling with one argument will process the callbacks until a given time limit is reached.
 /// Time limit is in milliseconds.
-/// This has to be manually hooked using Auxtools's hooks::hook.
-/// e.g. hooks::hook("/proc/process_library_callbacks",callback_processing_hook)
-/// and then you have to call that function manually.
-#[hook]
-pub fn callback_processing_hook() {
+/// This has to be manually hooked in the code, e.g.
+/// ```
+/// #[hook("/proc/process_atmos_callbacks")]
+/// fn _atmos_callback_handle() {
+///     auxcallback::callback_processing_hook(args)
+/// }
+/// ```
+
+pub fn callback_processing_hook(args: &[&Value]) -> DMResult {
     match args.len() {
         0 => {
             process_callbacks();
