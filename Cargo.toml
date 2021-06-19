@@ -1,6 +1,6 @@
 [package]
 name = "auxcallback"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Putnam <putnam3145@gmail.com>"]
 edition = "2018"
 
@@ -11,6 +11,4 @@ crate-type = ["lib"]
 
 [dependencies]
 auxtools = { git = "https://github.com/willox/auxtools" }
-lazy_static = "1.4.0"
 flume = "0.10.5"
-coarsetime = "0.1.18"

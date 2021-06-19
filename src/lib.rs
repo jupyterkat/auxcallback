@@ -1,56 +1,87 @@
-#[macro_use]
-extern crate lazy_static;
-
 use auxtools::*;
 
-use coarsetime::{Duration, Instant};
+use std::time::Duration;
+
+use std::sync::{
+    atomic::{AtomicBool, Ordering::Relaxed},
+    Arc,
+};
+
+struct Timer {
+    done: Arc<AtomicBool>,
+}
+
+impl Timer {
+    fn new(time: Duration) -> Self {
+        let done = Arc::new(AtomicBool::new(false));
+        let thread_done = Arc::clone(&done);
+        std::thread::spawn(move || {
+            std::thread::sleep(time);
+            thread_done.store(true, Relaxed);
+        });
+        Self { done }
+    }
+    fn check(&self) -> bool {
+        self.done.load(Relaxed)
+    }
+}
 
 type DeferredFunc = Box<dyn Fn() -> DMResult + Send + Sync>;
 
 type CallbackChannel = (flume::Sender<DeferredFunc>, flume::Receiver<DeferredFunc>);
 
-lazy_static! {
-    static ref CALLBACK_CHANNEL: CallbackChannel = flume::bounded(100000);
+static mut CALLBACK_CHANNEL: Option<CallbackChannel> = None;
+
+#[init(partial)]
+fn _start_callbacks() -> Result<(), String> {
+    unsafe {
+        CALLBACK_CHANNEL = Some(flume::bounded(100000));
+    }
+    Ok(())
 }
 
 #[shutdown]
 fn _clean_callbacks() {
-    for cb in CALLBACK_CHANNEL.1.try_iter() {
-        drop(cb);
-    }
+    unsafe { CALLBACK_CHANNEL = None }
+}
+
+fn with_callback_receiver<T>(f: impl Fn(&flume::Receiver<DeferredFunc>) -> T) -> T {
+    f(unsafe { &CALLBACK_CHANNEL.as_ref().unwrap().1 })
 }
 
 /// This gives you a copy of the callback sender. Send to it with try_send or send, then later it'll be processed
 /// if one of the process_callbacks functions is called for any reason.
 pub fn byond_callback_sender() -> flume::Sender<DeferredFunc> {
-    CALLBACK_CHANNEL.0.clone()
+    unsafe { CALLBACK_CHANNEL.as_ref().unwrap().0.clone() }
 }
 
 /// Goes through every single outstanding callback and calls them.
 pub fn process_callbacks() {
     let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
-    for callback in CALLBACK_CHANNEL.1.try_iter() {
-        if let Err(e) = callback() {
-            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str()).unwrap()]);
+    with_callback_receiver(|receiver| {
+        for callback in receiver.try_iter() {
+            if let Err(e) = callback() {
+                let _ = stack_trace.call(&[&Value::from_string(e.message.as_str()).unwrap()]);
+            }
         }
-        drop(callback);
-    }
+    })
 }
 
 /// Goes through every single outstanding callback and calls them, until a given time limit is reached.
 pub fn process_callbacks_for(duration: Duration) -> bool {
-    let now = Instant::now();
     let stack_trace = Proc::find("/proc/auxtools_stack_trace").unwrap();
-    for callback in CALLBACK_CHANNEL.1.try_iter() {
-        if let Err(e) = callback() {
-            let _ = stack_trace.call(&[&Value::from_string(e.message.as_str()).unwrap()]);
+    let timer = Timer::new(duration);
+    with_callback_receiver(|receiver| {
+        for callback in receiver.try_iter() {
+            if let Err(e) = callback() {
+                let _ = stack_trace.call(&[&Value::from_string(e.message.as_str()).unwrap()]);
+            }
+            if timer.check() {
+                return true;
+            }
         }
-        drop(callback);
-        if now.elapsed() > duration {
-            break;
-        }
-    }
-    now.elapsed() > duration
+        false
+    })
 }
 
 /// Goes through every single outstanding callback and calls them, until a given time limit in milliseconds is reached.
