@@ -11,4 +11,4 @@ crate-type = ["lib"]
 
 [dependencies]
 auxtools = { git = "https://github.com/jupyterkat/auxtools", branch = "austation-aux"}
-flume = "0.10.5"
+flume = "0.10.9"

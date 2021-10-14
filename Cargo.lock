@@ -24,7 +24,7 @@ dependencies = [
 [[package]]
 name = "auxtools"
 version = "0.1.0"
-source = "git+https://github.com/jupyterkat/auxtools?branch=austation-aux#08c989675b3c67046fc23653483c3ef4bc6a61ea"
+source = "git+https://github.com/jupyterkat/auxtools?branch=austation-aux#39ebc18948b828456376c8355df493248745df8d"
 dependencies = [
  "ahash",
  "auxtools-impl",
@@ -40,7 +40,7 @@ dependencies = [
 [[package]]
 name = "auxtools-impl"
 version = "0.1.0"
-source = "git+https://github.com/jupyterkat/auxtools?branch=austation-aux#08c989675b3c67046fc23653483c3ef4bc6a61ea"
+source = "git+https://github.com/jupyterkat/auxtools?branch=austation-aux#39ebc18948b828456376c8355df493248745df8d"
 dependencies = [
  "hex",
  "proc-macro2",
@@ -68,12 +68,6 @@ checksum = "79c2681d6594606957bbb8631c4b90a7fcaaa72cdb714743a437b156d6a7eedd"
 
 [[package]]
 name = "cfg-if"
-version = "0.1.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
-
-[[package]]
-name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
@@ -90,11 +84,11 @@ dependencies = [
 
 [[package]]
 name = "detour"
-version = "0.7.1"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "078595bac2ff1822ae53ae3ca1c1ffca97897ecc959adf0137152bfdc278d0d3"
+checksum = "f3c83fabcc3bc336e19320c13576ea708a15deec201d6b879b7ad1b92734d7b9"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if",
  "generic-array",
  "lazy_static",
  "libc",
@@ -131,11 +125,12 @@ checksum = "36ea153c13024fe480590b3e3d4cad89a0cfacecc24577b68f86c6ced9c2bc11"
 
 [[package]]
 name = "generic-array"
-version = "0.13.3"
+version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f797e67af32588215eaaab8327027ee8e71b9dd0b2b26996aedf20c030fce309"
+checksum = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 dependencies = [
  "typenum",
+ "version_check",
 ]
 
 [[package]]
@@ -144,7 +139,7 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcd999463524c52659517fe2cea98493cfe485d10565e7b0fb07dbba7ad2753"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "js-sys",
  "libc",
  "wasi",
@@ -246,7 +241,7 @@ version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
 ]
 
 [[package]]
@@ -396,7 +391,7 @@ version = "0.2.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "632f73e236b219150ea279196e54e610f5dbafa5d61786303d4da54f84e47fce"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if",
  "wasm-bindgen-macro",
 ]
 
