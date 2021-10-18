@@ -1,28 +1,35 @@
 use auxtools::*;
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use std::sync::{
     atomic::{AtomicBool, Ordering::Relaxed},
     Arc,
 };
 
-struct Timer {
-    done: Arc<AtomicBool>,
+enum Timer {
+    Fast(Arc<AtomicBool>),
+    Slow(Instant, Duration)
 }
 
 impl Timer {
     fn new(time: Duration) -> Self {
         let done = Arc::new(AtomicBool::new(false));
         let thread_done = Arc::clone(&done);
-        std::thread::spawn(move || {
+        let builder = std::thread::Builder::new();
+        match builder.spawn(move || {
             std::thread::sleep(time);
             thread_done.store(true, Relaxed);
-        });
-        Self { done }
+        }) {
+            Ok(_) => Self::Fast(done),
+            Err(_) => Self::Slow(Instant::now(), time)
+        }
     }
     fn check(&self) -> bool {
-        self.done.load(Relaxed)
+        match self {
+            Self::Fast(done) => done.load(Relaxed),
+            Self::Slow(time, duration) => time.elapsed() >= *duration
+        }
     }
 }
 
